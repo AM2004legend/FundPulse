@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16
+    container_name: fundpulse-db
+    environment:
+      # Local development only. Production credentials live in secrets, never here.
+      POSTGRES_USER: fundpulse
+      POSTGRES_PASSWORD: fundpulse
+      POSTGRES_DB: fundpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume: data survives `docker compose down` (but not `down -v`)
+      - pgdata:/var/lib/postgresql/data
+      # Scripts in this folder run once, when the database is first created
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fundpulse -d fundpulse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
