@@ -14,6 +14,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       # Scripts in this folder run once, when the database is first created
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/views.sql:/docker-entrypoint-initdb.d/02_views.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fundpulse -d fundpulse"]
       interval: 5s

@@ -73,6 +73,10 @@ read it before starting any task.
   out of the volume check's baseline.
 - Note for Phase 7: liquid funds have NAVs on more days (~326/yr vs ~245/yr for equity), and
   20-Oct-2026 had no equity NAVs anywhere (market holiday) — use "previous available date".
+- 2026-10-22 (Phase 7): all three Compare metrics use the same trailing year, from the "base"
+  NAV (last on or before latest_date − 365) to each fund's own latest NAV; NULL if the fund
+  has < 1 year. Volatility = STDDEV_SAMP × √250 for every fund (liquid funds slightly
+  understated; documented in views.sql). Plain views, not materialized.
 
 ## Folder structure
 ```
@@ -127,6 +131,8 @@ docs/PRD.md
 - `docker compose exec db psql -U fundpulse -d fundpulse` — SQL shell (`\dt` lists tables)
 - `docker compose down -v` — stop Postgres AND wipe data; next `up` re-applies schema.sql
 - `python -m pipeline.db` — check the DB connection
+- `python -m pipeline.db --init` — apply schema.sql + views.sql to DATABASE_URL (safe to re-run;
+  use after changing views.sql, and once on a new hosted DB)
 - `python -m pipeline.run` — run one daily load
 - `python -m pipeline.backfill [--years 3] [--refresh]` — load watchlist history (needs one
   daily run first so the schemes exist; re-runs use the cache and insert only missing dates)

@@ -8,10 +8,10 @@ import pytest
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
 
-from pipeline.config import PROJECT_ROOT  # importing config also loads .env
+import pipeline.config  # noqa: F401  (importing config loads .env, which sets TEST_DATABASE_URL)
+from pipeline.db import apply_sql_files
 from pipeline.extract import split_lines
 
-SCHEMA_PATH = PROJECT_ROOT / "sql" / "schema.sql"
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "navall_sample.txt"
 TABLES = ["quarantine", "raw_nav", "watchlist", "nav_history", "schemes", "pipeline_runs"]
 
@@ -37,7 +37,7 @@ def test_db_url() -> str:
     # (CREATE TABLE IF NOT EXISTS alone would keep an old table after schema.sql changes).
     with psycopg.connect(url, autocommit=True) as conn:
         conn.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
-        conn.execute(SCHEMA_PATH.read_text(encoding="utf-8"))
+        apply_sql_files(conn)  # the same code that sets up real databases
     return url
 
 
