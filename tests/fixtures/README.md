@@ -24,3 +24,18 @@ for two hand edits. `.gitattributes` stops git from changing the line endings.
 
 Expected after parsing: 19 data rows → 15 clean rows, 1 in-file duplicate dropped,
 3 quarantined (1 × `N.A.`, 2 × zero NAV). 5 category/fund-house section pairs.
+
+## mfapi_sample.json
+
+A trimmed copy of `https://api.mfapi.in/mf/119018` (HDFC Large Cap Fund – Direct – Growth),
+downloaded 2026-10-22. `meta` is unchanged; `data` keeps 8 of the 3,396 points, newest first
+like the real API, with their real values — except one hand edit.
+
+| Date | Why it's there |
+|---|---|
+| 19, 16, 14, 13-10-2026 | Recent NAVs (5 decimals, as mfapi sends them) |
+| **15-10-2026** | **Hand edit:** NAV changed from `1169.41900` to `N.A.` → must be quarantined |
+| 23-10-2023 | First trading day after the 3-year cutoff (22-10-2023) used in tests → kept |
+| 20-10-2023, 01-01-2013 | Before the cutoff → dropped by the adapter |
+
+Expected with `since=2023-10-22`: 6 lines → 5 clean, 1 quarantined.

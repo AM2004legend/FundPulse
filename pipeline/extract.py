@@ -35,7 +35,14 @@ def split_lines(text: str) -> list[str]:
 
 
 def download_nav_file(url=NAV_URL, session=None, sleep=time.sleep) -> list[str]:
-    """Return the file's lines. `session` and `sleep` can be swapped out in tests."""
+    """Return the daily file's lines. `session` and `sleep` can be swapped out in tests."""
+    # Decode ourselves: AMFI sends no charset, and requests would guess
+    # ISO-8859-1, turning the UTF-8 apostrophe ’ into garbage.
+    return split_lines(fetch_with_retries(url, session, sleep).decode("utf-8"))
+
+
+def fetch_with_retries(url: str, session=None, sleep=time.sleep) -> bytes:
+    """GET a URL politely and return the body. Used by the daily run and the backfill."""
     session = session or requests.Session()
     attempts = MAX_RETRIES + 1
     last_error = None
@@ -46,9 +53,7 @@ def download_nav_file(url=NAV_URL, session=None, sleep=time.sleep) -> list[str]:
             if response.status_code >= 500:
                 raise _ServerError(f"HTTP {response.status_code}")
             response.raise_for_status()  # 4xx: our request is wrong, retrying won't help
-            # Decode ourselves: AMFI sends no charset, and requests would guess
-            # ISO-8859-1, turning the UTF-8 apostrophe ’ into garbage.
-            return split_lines(response.content.decode("utf-8"))
+            return response.content
         except requests.HTTPError as exc:
             raise DownloadError(f"{url} failed and will not be retried: {exc}") from exc
         except (requests.ConnectionError, requests.Timeout, _ServerError) as exc:

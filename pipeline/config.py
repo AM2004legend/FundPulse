@@ -17,6 +17,11 @@ CATEGORY_MAP_PATH = PROJECT_ROOT / "data" / "category_map.csv"
 
 NAV_URL = "https://portal.amfiindia.com/spages/NAVAll.txt"
 
+# Backfill source: one fund's full history as JSON. Community-run, not official, so the
+# backfill never overwrites a NAV that came from AMFI's own file.
+MFAPI_URL = "https://api.mfapi.in/mf"
+MFAPI_CACHE_DIR = PROJECT_ROOT / "data" / "cache" / "mfapi"
+
 WATCHLIST_CATEGORIES = ("large-cap", "flexi-cap", "mid-cap", "index", "debt")
 
 

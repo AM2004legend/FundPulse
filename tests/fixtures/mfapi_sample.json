@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "fund_house": "HDFC Mutual Fund",
+    "scheme_type": "Open Ended Schemes",
+    "scheme_category": "Equity Scheme - Large Cap Fund",
+    "scheme_code": 119018,
+    "scheme_name": "HDFC Large Cap Fund - Direct Plan - Growth Option",
+    "isin_growth": "INF179K01YV8",
+    "isin_div_reinvestment": null
+  },
+  "data": [
+    {
+      "date": "19-10-2026",
+      "nav": "1158.60900"
+    },
+    {
+      "date": "16-10-2026",
+      "nav": "1172.67100"
+    },
+    {
+      "date": "15-10-2026",
+      "nav": "N.A."
+    },
+    {
+      "date": "14-10-2026",
+      "nav": "1152.58100"
+    },
+    {
+      "date": "13-10-2026",
+      "nav": "1158.97400"
+    },
+    {
+      "date": "23-10-2023",
+      "nav": "911.54600"
+    },
+    {
+      "date": "20-10-2023",
+      "nav": "924.28800"
+    },
+    {
+      "date": "01-01-2013",
+      "nav": "228.94300"
+    }
+  ],
+  "status": "SUCCESS"
+}

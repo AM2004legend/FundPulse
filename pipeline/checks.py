@@ -52,9 +52,13 @@ def _newest_date(result: TransformResult) -> date | None:
 
 
 def check_volume(conn: psycopg.Connection, run_id: int, rows_now: int) -> CheckResult:
-    """Fail if this run has under 90% of the rows of the last successful run (truncated file?)."""
+    """Fail if this run has under 90% of the rows of the last successful daily run.
+
+    Backfill runs load a different amount of data, so they are not a valid baseline.
+    """
     row = conn.execute(
-        "SELECT rows_loaded FROM pipeline_runs WHERE status = 'success' AND run_id < %s "
+        "SELECT rows_loaded FROM pipeline_runs "
+        "WHERE run_type = 'daily' AND status = 'success' AND run_id < %s "
         "ORDER BY run_id DESC LIMIT 1",
         (run_id,),
     ).fetchone()

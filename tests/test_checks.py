@@ -73,6 +73,16 @@ def test_volume_compares_with_the_last_successful_run(conn):
     assert not checks.check_volume(conn, now, rows_now=89).passed
 
 
+def test_volume_ignores_backfill_runs(conn):
+    daily = load.start_run(conn)
+    load.finish_run(conn, daily, "success", rows_loaded=100)
+    backfill = load.start_run(conn, run_type="backfill")
+    load.finish_run(conn, backfill, "success", rows_loaded=20_000)
+    now = load.start_run(conn)
+
+    assert checks.check_volume(conn, now, rows_now=95).passed  # compared with 100, not 20,000
+
+
 # --- big moves -----------------------------------------------------------------------
 
 

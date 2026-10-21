@@ -2,34 +2,9 @@
 
 import pytest
 import requests
+from fakes import FakeResponse, FakeSession
 
 from pipeline.extract import DownloadError, download_nav_file, split_lines
-
-
-class FakeResponse:
-    def __init__(self, status_code=200, content=b""):
-        self.status_code = status_code
-        self.content = content
-
-    def raise_for_status(self):
-        if self.status_code >= 400:
-            raise requests.HTTPError(f"{self.status_code} error")
-
-
-class FakeSession:
-    """Returns (or raises) the given outcomes in order, and records each call."""
-
-    def __init__(self, *outcomes):
-        self.outcomes = list(outcomes)
-        self.calls = []
-
-    def get(self, url, **kwargs):
-        self.calls.append((url, kwargs))
-        outcome = self.outcomes.pop(0)
-        if isinstance(outcome, Exception):
-            raise outcome
-        return outcome
-
 
 OK = FakeResponse(200, "Header\r\n \r\nChildren’s Fund\r\n\r\n".encode())
 

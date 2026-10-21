@@ -1,11 +1,13 @@
 """Write to PostgreSQL. Each function is its own transaction on an autocommit connection."""
 
+from typing import NamedTuple
+
 import pandas as pd
 import psycopg
 
 from pipeline.transform import TransformResult
 
-START_RUN = "INSERT INTO pipeline_runs (status) VALUES ('running') RETURNING run_id"
+START_RUN = "INSERT INTO pipeline_runs (run_type, status) VALUES (%s, 'running') RETURNING run_id"
 
 FINISH_RUN = """
 UPDATE pipeline_runs
@@ -59,7 +61,20 @@ ON CONFLICT (scheme_code, nav_date) DO UPDATE SET nav = EXCLUDED.nav
 WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav
 """
 
+# Backfill: the daily AMFI file is the official source, so never overwrite what's stored.
+INSERT_NAV_IF_MISSING = """
+INSERT INTO nav_history (scheme_code, nav_date, nav)
+VALUES (%s, %s, %s)
+ON CONFLICT (scheme_code, nav_date) DO NOTHING
+"""
+
 INSERT_QUARANTINE = "INSERT INTO quarantine (run_id, raw_line, reason) VALUES (%s, %s, %s)"
+
+
+class InsertStats(NamedTuple):
+    inserted: int  # new (scheme, date) rows
+    already_stored: int  # rows we skipped because that date was already in nav_history
+    mismatched: int  # of those, how many had a different NAV from the one stored
 
 
 def _rows(df: pd.DataFrame, columns: list[str]) -> list[tuple]:
@@ -67,9 +82,13 @@ def _rows(df: pd.DataFrame, columns: list[str]) -> list[tuple]:
     return list(df[columns].astype(object).itertuples(index=False, name=None))
 
 
-def start_run(conn: psycopg.Connection) -> int:
+def _quarantine_rows(run_id: int, result: TransformResult) -> list[tuple]:
+    return [(run_id, *row) for row in _rows(result.quarantined, ["raw_line", "reason"])]
+
+
+def start_run(conn: psycopg.Connection, run_type: str = "daily") -> int:
     with conn.transaction():
-        return conn.execute(START_RUN).fetchone()[0]
+        return conn.execute(START_RUN, (run_type,)).fetchone()[0]
 
 
 def finish_run(
@@ -98,13 +117,41 @@ def load_day(conn: psycopg.Connection, run_id: int, result: TransformResult) -> 
     schemes = result.clean.drop_duplicates("scheme_code", keep="last")
     scheme_rows = _rows(schemes, SCHEME_COLUMNS)
     nav_rows = _rows(result.clean, ["scheme_code", "nav_date", "nav"])
-    quarantine_rows = [(run_id, *row) for row in _rows(result.quarantined, ["raw_line", "reason"])]
 
     with conn.transaction(), conn.cursor() as cur:
         # schemes first: nav_history.scheme_code is a foreign key to schemes
         cur.executemany(UPSERT_SCHEME, scheme_rows)
         cur.executemany(UPSERT_NAV, nav_rows)
-        cur.executemany(INSERT_QUARANTINE, quarantine_rows)
+        cur.executemany(INSERT_QUARANTINE, _quarantine_rows(run_id, result))
+
+
+def insert_missing_navs(
+    conn: psycopg.Connection, run_id: int, result: TransformResult
+) -> InsertStats:
+    """Backfill: add NAVs for dates we don't have yet; leave stored ones alone — all or nothing.
+
+    Schemes are not touched: the daily file owns their names and categories.
+    """
+    nav_rows = _rows(result.clean, ["scheme_code", "nav_date", "nav"])
+    codes = sorted({row[0] for row in nav_rows})
+
+    with conn.transaction(), conn.cursor() as cur:
+        stored = {
+            (code, day): nav
+            for code, day, nav in cur.execute(
+                "SELECT scheme_code, nav_date, nav FROM nav_history WHERE scheme_code = ANY(%s)",
+                (codes,),
+            )
+        }
+        new_rows = [row for row in nav_rows if (row[0], row[1]) not in stored]
+        # Decimal comparison ignores trailing zeros: 1158.60900 == 1158.609
+        mismatched = sum(
+            1 for code, day, nav in nav_rows if (code, day) in stored and stored[code, day] != nav
+        )
+        cur.executemany(INSERT_NAV_IF_MISSING, new_rows)
+        cur.executemany(INSERT_QUARANTINE, _quarantine_rows(run_id, result))
+
+    return InsertStats(len(new_rows), len(nav_rows) - len(new_rows), mismatched)
 
 
 def sync_watchlist(conn: psycopg.Connection, watchlist: dict[int, str]) -> None:

@@ -66,6 +66,13 @@ read it before starting any task.
 - 2026-10-22 (Phase 5): checks run AFTER the load. A failed check marks the run failed
   (exit 1) but keeps the data — upserts never delete, so the checks alert, they don't block.
   Warnings go to `pipeline_runs.warnings`.
+- 2026-10-22 (Phase 6): backfill source is mfapi.in (30 requests ≈ 4 MB vs ~800 MB from AMFI's
+  all-scheme history; values matched AMFI exactly on a spot check). Cached in data/cache/mfapi/.
+  Backfill uses `ON CONFLICT DO NOTHING`: the official daily file always wins; differing values
+  are reported as warnings. `pipeline_runs.run_type` ('daily'/'backfill') keeps backfill runs
+  out of the volume check's baseline.
+- Note for Phase 7: liquid funds have NAVs on more days (~326/yr vs ~245/yr for equity), and
+  20-Oct-2026 had no equity NAVs anywhere (market holiday) — use "previous available date".
 
 ## Folder structure
 ```
@@ -121,6 +128,8 @@ docs/PRD.md
 - `docker compose down -v` — stop Postgres AND wipe data; next `up` re-applies schema.sql
 - `python -m pipeline.db` — check the DB connection
 - `python -m pipeline.run` — run one daily load
+- `python -m pipeline.backfill [--years 3] [--refresh]` — load watchlist history (needs one
+  daily run first so the schemes exist; re-runs use the cache and insert only missing dates)
 - `pytest` — run tests (DB tests use `TEST_DATABASE_URL` → `fundpulse_test`, auto-created and
   emptied before each test; dev data is never touched)
 - `ruff check .` / `ruff format .`

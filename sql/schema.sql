@@ -4,6 +4,7 @@
 -- Metadata: one row per pipeline run.
 CREATE TABLE IF NOT EXISTS pipeline_runs (
     run_id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    run_type         TEXT NOT NULL DEFAULT 'daily' CHECK (run_type IN ('daily', 'backfill')),
     started_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
     finished_at      TIMESTAMPTZ,
     status           TEXT NOT NULL CHECK (status IN ('running', 'success', 'failed')),
