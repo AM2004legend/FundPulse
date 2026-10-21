@@ -51,6 +51,13 @@ read it before starting any task.
 - 2026-10-22 (Phase 2): AMFI uses two spellings/taxonomies for the same category
   (e.g. "Equity Scheme - Large Cap Fund" vs "Equity Schemes - Large Cap Fund"). Normalise
   every category heading to one canonical label before storing it in `schemes.category`.
+  The mapping lives in `data/category_map.csv` (SEBI-style labels; debt "Term" names merged
+  into "Duration" names; Sectoral + Thematic merged; Index/ETF/FoF labels kept as-is).
+  Unknown headings pass through cleaned, with a warning.
+- 2026-10-22 (Phase 3): in-file duplicates — same NAV → keep one (counted); different NAVs →
+  quarantine all of them.
+- 2026-10-22 (Phase 3): AMFI sometimes omits the fund-house heading (rows directly under a
+  category heading). Those rows are kept with `fund_house = NULL`, not quarantined.
 
 ## Folder structure
 ```
@@ -71,6 +78,7 @@ fundpulse/
     app.py
   data/
     watchlist.csv   # ~30 scheme codes + category
+    category_map.csv  # AMFI heading -> one canonical category label
   tests/
     fixtures/       # small sample NAV files
   .github/workflows/

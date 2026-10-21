@@ -12,6 +12,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 WATCHLIST_PATH = PROJECT_ROOT / "data" / "watchlist.csv"
+CATEGORY_MAP_PATH = PROJECT_ROOT / "data" / "category_map.csv"
+
+NAV_URL = "https://portal.amfiindia.com/spages/NAVAll.txt"
 
 
 def get_database_url() -> str:
