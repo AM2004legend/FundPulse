@@ -58,6 +58,14 @@ read it before starting any task.
   quarantine all of them.
 - 2026-10-22 (Phase 3): AMFI sometimes omits the fund-house heading (rows directly under a
   category heading). Those rows are kept with `fund_house = NULL`, not quarantined.
+- 2026-10-22 (Phase 5): `schemes` keeps `plan_type` + `option_type` (Direct/Regular x
+  Growth/IDCW share one scheme_name in the file).
+- 2026-10-22 (Phase 5): watchlist lives in a `watchlist (scheme_code, category)` table synced
+  from `data/watchlist.csv` every run (replaces `schemes.is_watchlist`). 30 Direct-Growth funds,
+  6 per category. Parag Parikh Flexi Cap left out: its NAV often lags a day or two.
+- 2026-10-22 (Phase 5): checks run AFTER the load. A failed check marks the run failed
+  (exit 1) but keeps the data — upserts never delete, so the checks alert, they don't block.
+  Warnings go to `pipeline_runs.warnings`.
 
 ## Folder structure
 ```

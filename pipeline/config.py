@@ -1,5 +1,6 @@
 """Settings read from environment variables (and a local .env file in development)."""
 
+import csv
 import os
 from pathlib import Path
 
@@ -15,6 +16,22 @@ WATCHLIST_PATH = PROJECT_ROOT / "data" / "watchlist.csv"
 CATEGORY_MAP_PATH = PROJECT_ROOT / "data" / "category_map.csv"
 
 NAV_URL = "https://portal.amfiindia.com/spages/NAVAll.txt"
+
+WATCHLIST_CATEGORIES = ("large-cap", "flexi-cap", "mid-cap", "index", "debt")
+
+
+def read_watchlist(path=WATCHLIST_PATH) -> dict[int, str]:
+    """Return {scheme_code: category}. Fails loudly on a typo rather than skipping a fund."""
+    watchlist = {}
+    with open(path, encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            code, category = int(row["scheme_code"]), row["category"].strip()
+            if code in watchlist:
+                raise ValueError(f"{path}: scheme_code {code} is listed twice")
+            if category not in WATCHLIST_CATEGORIES:
+                raise ValueError(f"{path}: unknown category {category!r} for {code}")
+            watchlist[code] = category
+    return watchlist
 
 
 def get_database_url() -> str:

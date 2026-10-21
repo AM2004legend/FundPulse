@@ -96,6 +96,14 @@ def test_scheme_name_and_isin(result):
     assert r["isin_growth"] == "INF846K01DN3"
 
 
+def test_plan_and_option_are_kept(result):
+    # Four schemes share the name "Axis Large Cap Fund"; plan + option tell them apart.
+    r = row(result, 120466)
+    assert (r["plan_type"], r["option_type"]) == ("Direct Plan", "IDCW Option")
+    r = row(result, 119527)  # both fields are empty in the file
+    assert (r["plan_type"], r["option_type"]) == (None, None)
+
+
 # --- small hand-written cases ------------------------------------------------
 
 

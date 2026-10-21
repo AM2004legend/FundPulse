@@ -13,7 +13,7 @@ from pipeline.extract import split_lines
 
 SCHEMA_PATH = PROJECT_ROOT / "sql" / "schema.sql"
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "navall_sample.txt"
-TABLES = ["quarantine", "raw_nav", "nav_history", "schemes", "pipeline_runs"]
+TABLES = ["quarantine", "raw_nav", "watchlist", "nav_history", "schemes", "pipeline_runs"]
 
 
 @pytest.fixture(scope="session")
@@ -33,7 +33,10 @@ def test_db_url() -> str:
         if not exists:
             admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
 
+    # Rebuild from schema.sql every session, so the test DB always matches the current schema
+    # (CREATE TABLE IF NOT EXISTS alone would keep an old table after schema.sql changes).
     with psycopg.connect(url, autocommit=True) as conn:
+        conn.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
         conn.execute(SCHEMA_PATH.read_text(encoding="utf-8"))
     return url
 

@@ -49,10 +49,11 @@ ML predictions.
 | Table | Layer | Columns | Keys / constraints |
 |---|---|---|---|
 | raw_nav | Raw | run_id, line_no, raw_line, loaded_at | PK (run_id, line_no) |
-| schemes | Clean | scheme_code, scheme_name, fund_house, category, isin_growth, is_watchlist | PK scheme_code |
+| schemes | Clean | scheme_code, scheme_name, plan_type, option_type, fund_house, category, isin_growth | PK scheme_code |
+| watchlist | Clean | scheme_code → schemes, category (large-cap / flexi-cap / mid-cap / index / debt) | PK scheme_code; synced from data/watchlist.csv each run |
 | nav_history | Clean | scheme_code → schemes, nav_date, nav NUMERIC(16,8) | PK (scheme_code, nav_date); CHECK nav > 0 |
 | quarantine | Clean | run_id, raw_line, reason | — |
-| pipeline_runs | Metadata | run_id, started_at, finished_at, status, rows_loaded, rows_quarantined, error | PK run_id |
+| pipeline_runs | Metadata | run_id, started_at, finished_at, status, rows_loaded, rows_quarantined, error, warnings | PK run_id |
 
 ## Pipeline (one daily run)
 1. Insert pipeline_runs row (status "running").

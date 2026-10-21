@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
     status           TEXT NOT NULL CHECK (status IN ('running', 'success', 'failed')),
     rows_loaded      INTEGER NOT NULL DEFAULT 0,
     rows_quarantined INTEGER NOT NULL DEFAULT 0,
-    error            TEXT
+    error            TEXT,  -- why the run failed (exception or failed quality checks)
+    warnings         TEXT   -- quality warnings that did not fail the run
 );
 
 -- Raw layer: every line of the downloaded file, exactly as received.
@@ -21,14 +22,23 @@ CREATE TABLE IF NOT EXISTS raw_nav (
     PRIMARY KEY (run_id, line_no)
 );
 
--- Clean layer: one row per scheme (fund plan).
+-- Clean layer: one row per scheme. A fund has several schemes (Direct/Regular x Growth/IDCW)
+-- that share a scheme_name, so plan_type + option_type are needed to tell them apart.
 CREATE TABLE IF NOT EXISTS schemes (
-    scheme_code  INTEGER PRIMARY KEY,
-    scheme_name  TEXT NOT NULL,
-    fund_house   TEXT,
-    category     TEXT,
-    isin_growth  TEXT,
-    is_watchlist BOOLEAN NOT NULL DEFAULT false
+    scheme_code INTEGER PRIMARY KEY,
+    scheme_name TEXT NOT NULL,
+    plan_type   TEXT,  -- e.g. 'Direct Plan'; NULL when the file leaves it empty
+    option_type TEXT,  -- e.g. 'Growth', 'IDCW Option'; free text in the file
+    fund_house  TEXT,
+    category    TEXT,  -- canonical AMFI category (data/category_map.csv)
+    isin_growth TEXT
+);
+
+-- The ~30 funds we compute metrics for, synced from data/watchlist.csv on every run.
+-- category is our own short label (large-cap, index, ...) used by the dashboard.
+CREATE TABLE IF NOT EXISTS watchlist (
+    scheme_code INTEGER PRIMARY KEY REFERENCES schemes (scheme_code),
+    category    TEXT NOT NULL
 );
 
 -- Clean layer: one NAV per scheme per date. The primary key is what makes upserts idempotent.

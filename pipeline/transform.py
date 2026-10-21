@@ -33,6 +33,8 @@ ISIN_PATTERN = r"INF[A-Z0-9]{9}"  # Indian mutual-fund ISINs start with INF
 CLEAN_COLUMNS = [
     "scheme_code",
     "scheme_name",
+    "plan_type",
+    "option_type",
     "fund_house",
     "category",
     "isin_growth",
@@ -114,10 +116,12 @@ def parse_nav_lines(lines: list[str]) -> TransformResult:
     fields = pd.DataFrame(
         [p if len(p) == N_FIELDS else [""] * N_FIELDS for p in parts], index=df.index
     ).apply(lambda col: col.str.strip())
-    # Columns 2 (ISIN Div Reinvestment), 4 (Plan) and 5 (Option) aren't stored.
+    # Column 2 (ISIN Div Reinvestment) isn't stored.
     code_text = fields[0]
     isin_text = fields[1]
     name_text = fields[3]
+    plan_text = fields[4]
+    option_text = fields[5]
     nav_text = fields[6]
     date_text = fields[7]
 
@@ -125,6 +129,8 @@ def parse_nav_lines(lines: list[str]) -> TransformResult:
     df["nav"] = [Decimal(t) if ok else None for t, ok in zip(nav_text, nav_is_number, strict=True)]
     df["nav_date"] = pd.to_datetime(date_text, format="%d-%b-%Y", errors="coerce").dt.date
     df["scheme_name"] = name_text
+    df["plan_type"] = _none_for_missing(plan_text.where(plan_text != ""))
+    df["option_type"] = _none_for_missing(option_text.where(option_text != ""))
     df["isin_growth"] = _none_for_missing(isin_text.where(isin_text.str.fullmatch(ISIN_PATTERN)))
     df["fund_house"] = _none_for_missing(df["fund_house"])
 

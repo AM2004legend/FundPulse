@@ -75,13 +75,33 @@ def test_load_is_all_or_nothing(conn, result):
     assert counts(conn) == {"schemes": 0, "nav_history": 0, "quarantine": 0}
 
 
-def test_reload_keeps_watchlist_flag(conn, result):
-    load_new_run(conn, result)
-    conn.execute("UPDATE schemes SET is_watchlist = true WHERE scheme_code = 120465")
+def watchlist_rows(conn):
+    return conn.execute("SELECT scheme_code, category FROM watchlist ORDER BY 1").fetchall()
+
+
+def test_sync_watchlist_replaces_contents_and_skips_unknown_codes(conn, result):
     load_new_run(conn, result)
 
-    flag = conn.execute("SELECT is_watchlist FROM schemes WHERE scheme_code = 120465").fetchone()
-    assert flag == (True,)
+    load.sync_watchlist(conn, {120465: "large-cap", 999999: "index"})
+    assert watchlist_rows(conn) == [(120465, "large-cap")]  # 999999 isn't a known scheme
+
+    load.sync_watchlist(conn, {135762: "debt"})
+    assert watchlist_rows(conn) == [(135762, "debt")]  # the CSV is the source of truth
+
+
+def test_reload_keeps_watchlist(conn, result):
+    load_new_run(conn, result)
+    load.sync_watchlist(conn, {120465: "large-cap"})
+    load_new_run(conn, result)
+    assert watchlist_rows(conn) == [(120465, "large-cap")]
+
+
+def test_plan_and_option_are_stored(conn, result):
+    load_new_run(conn, result)
+    row = conn.execute(
+        "SELECT scheme_name, plan_type, option_type FROM schemes WHERE scheme_code = 120465"
+    ).fetchone()
+    assert row == ("Axis Large Cap Fund", "Direct Plan", "Growth Option")
 
 
 def test_raw_lines_are_saved_exactly(conn, fixture_lines):
