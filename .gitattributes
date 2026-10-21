@@ -1,0 +1,3 @@
+# Fixtures must stay byte-for-byte identical to what AMFI sends (CRLF line endings,
+# lines containing a single space). Stop git from converting line endings on them.
+tests/fixtures/*.txt -text

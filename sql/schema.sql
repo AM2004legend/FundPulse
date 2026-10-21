@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS schemes (
 CREATE TABLE IF NOT EXISTS nav_history (
     scheme_code INTEGER NOT NULL REFERENCES schemes (scheme_code),
     nav_date    DATE NOT NULL,
-    nav         NUMERIC(12, 4) NOT NULL CHECK (nav > 0),
+    nav         NUMERIC(16, 8) NOT NULL CHECK (nav > 0),  -- some AMFI NAVs have 8 decimals
     PRIMARY KEY (scheme_code, nav_date)
 );
 

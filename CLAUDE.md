@@ -35,7 +35,7 @@ read it before starting any task.
 - **Idempotent loads:** upsert on `(scheme_code, nav_date)` with `INSERT ... ON CONFLICT DO UPDATE`.
   Running the same day twice must leave row counts unchanged.
 - One day's load happens inside **one transaction** — all or nothing.
-- NAV stored as `NUMERIC(12,4)`, never float.
+- NAV stored as `NUMERIC(16,8)`, never float.
 - Bad rows are **quarantined with a reason**, never silently dropped.
 - Keep raw and clean data separate: `raw_nav` holds lines exactly as received.
 - Every run is logged in `pipeline_runs` (start, end, status, rows loaded, rows quarantined, error).
@@ -43,6 +43,14 @@ read it before starting any task.
 - Secrets (database URL) only in `.env` / GitHub secrets / Streamlit secrets. Commit `.env.example`.
 - Be polite to data sources: timeouts, max 3 retries with backoff, cache backfill downloads.
 - Dashboard shows "Data as of <date>" and "For learning only. Not investment advice."
+
+## Decisions log
+- 2026-10-22 (Phase 2): the real file has NAVs with up to 8 decimals → `nav NUMERIC(16,8)`.
+- 2026-10-22 (Phase 2): NAV that is non-numeric (e.g. "N.A.") **or zero** (segregated
+  portfolios, 241 rows on 21-Oct-2026) → quarantine with a reason.
+- 2026-10-22 (Phase 2): AMFI uses two spellings/taxonomies for the same category
+  (e.g. "Equity Scheme - Large Cap Fund" vs "Equity Schemes - Large Cap Fund"). Normalise
+  every category heading to one canonical label before storing it in `schemes.category`.
 
 ## Folder structure
 ```

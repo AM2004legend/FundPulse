@@ -33,7 +33,7 @@ checks every load, bad rows quarantined · parser, cleaner and metrics tested ·
 | # | Story | Acceptance criteria |
 |---|---|---|
 | 1 | Download today's file | Up to 3 retries on network error; raw lines saved with run_id |
-| 2 | Parse and clean | Headings/blank lines skipped but fund house + category remembered; NAV → number; date parsed; invalid NAV ("N.A.") → quarantine with reason |
+| 2 | Parse and clean | Headings/blank lines skipped but fund house + category remembered; NAV → number; date parsed; invalid NAV (non-numeric e.g. "N.A.", or zero) → quarantine with reason; category headings normalised to one spelling |
 | 3 | Load into PostgreSQL | Upsert on (scheme_code, nav_date); re-run changes nothing |
 | 4 | Data-quality checks | Fail if row volume < 90% of last success, a watchlist fund lacks latest NAV, or newest date > 4 days old; warn on >20% one-day move |
 | 5 | Log every run | One pipeline_runs row: start, end, rows loaded, rows quarantined, status, error |
@@ -50,7 +50,7 @@ ML predictions.
 |---|---|---|---|
 | raw_nav | Raw | run_id, line_no, raw_line, loaded_at | PK (run_id, line_no) |
 | schemes | Clean | scheme_code, scheme_name, fund_house, category, isin_growth, is_watchlist | PK scheme_code |
-| nav_history | Clean | scheme_code → schemes, nav_date, nav NUMERIC(12,4) | PK (scheme_code, nav_date); CHECK nav > 0 |
+| nav_history | Clean | scheme_code → schemes, nav_date, nav NUMERIC(16,8) | PK (scheme_code, nav_date); CHECK nav > 0 |
 | quarantine | Clean | run_id, raw_line, reason | — |
 | pipeline_runs | Metadata | run_id, started_at, finished_at, status, rows_loaded, rows_quarantined, error | PK run_id |
 

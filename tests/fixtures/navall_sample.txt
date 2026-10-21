@@ -1,0 +1,46 @@
+Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date
+ 
+Open Ended Schemes(Children’s Fund - Childrens' Fund)
+ 
+Axis Mutual Fund
+ 
+135762;INF846K01WO1;-;Axis Children's Fund;Direct Plan;Growth Option;28.9452;21-Oct-2026
+135765;INF846K01WP8;-;Axis Children's Fund;Direct Plan;IDCW Option;26.6638;21-Oct-2026
+135759;INF846K01WJ1;-;Axis Children's Fund;Regular Plan;Growth Option;25.1847;21-Oct-2026
+135760;INF846K01WK9;-;Axis Children's Fund;Regular Plan;IDCW Option;23.2349;21-Oct-2026
+ 
+Open Ended Schemes(Equity Scheme - Large Cap Fund)
+ 
+Aditya Birla Sun Life Mutual Fund
+ 
+119528;INF209K01YY7;-;Aditya Birla Sun Life Large Cap Fund;Direct Plan;GROWTH;547.32;21-Oct-2026
+119527;INF209K01YX9;INF209K01YW1;Aditya Birla Sun Life Large Cap Fund;;;88.03;21-Oct-2026
+103174;INF209K01BR9;-;Aditya Birla Sun Life Large Cap Fund;Regular Plan;GROWTH;491.22;21-Oct-2026
+103173;INF209K01BO6;INF209K01EC5;Aditya Birla Sun Life Large Cap Fund;Regular Plan;IDCW;36.56;21-Oct-2026
+ 
+Open Ended Schemes(Equity Schemes - Large Cap Fund)
+ 
+Axis Mutual Fund
+ 
+120465;INF846K01DP8;-;Axis Large Cap Fund;Direct Plan;Growth Option;66.36;21-Oct-2026
+120466;INF846K01DN3;INF846K01DO1;Axis Large Cap Fund;Direct Plan;IDCW Option;24.04;21-Oct-2026
+112277;INF846K01164;-;Axis Large Cap Fund;Regular Plan;Growth Option;57.08;21-Oct-2026
+112278;INF846K01172;INF846K01180;Axis Large Cap Fund;Regular Plan;IDCW Option;N.A.;21-Oct-2026
+120465;INF846K01DP8;-;Axis Large Cap Fund;Direct Plan;Growth Option;66.36;21-Oct-2026
+ 
+Open Ended Schemes(Debt Scheme - Credit Risk Fund)
+ 
+Franklin Templeton Mutual Fund
+ 
+118553;INF090I01JL3;-;Franklin India Credit Risk Fund (No. of segregated portfolios-3);Direct Plan;;25.5650;11-Jun-2023
+148304;INF090I01VZ8;-;Franklin India Credit Risk Fund (No. of segregated portfolios-3);Direct Plan;Growth;0.0000;21-Oct-2026
+148303;INF090I01VX3;-;Franklin India Credit Risk Fund (No. of segregated portfolios-3);Regular Plan;Growth;0.0000;21-Oct-2026
+ 
+Open Ended Schemes(Hybrid Scheme - Arbitrage Fund)
+ 
+Bandhan Mutual Fund
+ 
+108844;INF194K01623;INF194K01631;BANDHAN Arbitrage Fund;;;14.86269632;17-Feb-2017
+108846;INF194K01615;-;BANDHAN Arbitrage Fund;;;21.25167644;17-Feb-2017
+133680;INF194KA1YD2;INF194KA1YE0;BANDHAN Arbitrage Fund;Regular Plan;Annual IDCW;11.0191;21-Oct-2026
+
