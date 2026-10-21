@@ -113,6 +113,7 @@ docs/PRD.md
 - `docker compose down -v` — stop Postgres AND wipe data; next `up` re-applies schema.sql
 - `python -m pipeline.db` — check the DB connection
 - `python -m pipeline.run` — run one daily load
-- `pytest` — run tests
+- `pytest` — run tests (DB tests use `TEST_DATABASE_URL` → `fundpulse_test`, auto-created and
+  emptied before each test; dev data is never touched)
 - `ruff check .` / `ruff format .`
 - `streamlit run dashboard/app.py`
