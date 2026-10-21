@@ -77,6 +77,12 @@ read it before starting any task.
   NAV (last on or before latest_date − 365) to each fund's own latest NAV; NULL if the fund
   has < 1 year. Volatility = STDDEV_SAMP × √250 for every fund (liquid funds slightly
   understated; documented in views.sql). Plain views, not materialized.
+- 2026-10-22 (Phase 8): the dashboard does NOT import `pipeline`; its only contract is the
+  views (read-only connection, `dashboard/requirements.txt` for Streamlit Cloud). Fund detail
+  ranges start at the last NAV on or before the chosen start (same rule as the views), and
+  drawdown restarts at the range start. Chart colours follow the fund picked first (blue),
+  then second (orange) — validated palette slots 1–2. Disclaimer + "Data as of" are drawn by
+  each page's header (AppTest's switch_page skips code after page.run() in app.py).
 
 ## Folder structure
 ```

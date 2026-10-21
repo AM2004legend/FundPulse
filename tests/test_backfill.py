@@ -6,8 +6,8 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from fakes import FakeResponse, FakeSession
 
+from fakes import FakeResponse, FakeSession
 from pipeline.backfill import BackfillError, backfill, fetch_history, to_navall_lines
 from pipeline.transform import parse_nav_lines
 

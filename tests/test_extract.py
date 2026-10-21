@@ -2,8 +2,8 @@
 
 import pytest
 import requests
-from fakes import FakeResponse, FakeSession
 
+from fakes import FakeResponse, FakeSession
 from pipeline.extract import DownloadError, download_nav_file, split_lines
 
 OK = FakeResponse(200, "Header\r\n \r\nChildren’s Fund\r\n\r\n".encode())

@@ -1,0 +1,5 @@
+# What Streamlit Community Cloud installs for the dashboard (it doesn't need the pipeline).
+streamlit==1.66.1
+pandas==3.0.6
+psycopg[binary]==3.3.6
+python-dotenv==1.2.4

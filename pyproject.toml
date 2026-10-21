@@ -1,6 +1,9 @@
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Where our own modules live, so imports sort as first-party (dashboard modules and
+# tests/fakes.py are imported by their bare names, like Streamlit and pytest do).
+src = [".", "dashboard", "tests"]
 
 [tool.ruff.lint]
 # E/F = pycodestyle + pyflakes basics, I = import sorting,

@@ -2,7 +2,24 @@
 -- Safe to re-run: views are dropped and recreated (CREATE OR REPLACE VIEW can't remove or
 -- rename columns). Apply with: python -m pipeline.db --init
 
-DROP VIEW IF EXISTS v_fund_metrics, v_drawdown, v_daily_returns CASCADE;
+DROP VIEW IF EXISTS v_pipeline_runs, v_fund_metrics, v_drawdown, v_daily_returns CASCADE;
+
+
+-- One row per pipeline run, for the Pipeline health page. Times are converted to India time
+-- here, in the database, which has the timezone rules built in.
+CREATE VIEW v_pipeline_runs AS
+SELECT
+    run_id,
+    run_type,
+    status,
+    started_at AT TIME ZONE 'Asia/Kolkata'                       AS started_at_ist,
+    finished_at AT TIME ZONE 'Asia/Kolkata'                      AS finished_at_ist,
+    round(EXTRACT(EPOCH FROM finished_at - started_at)::numeric, 1) AS duration_seconds,
+    rows_loaded,
+    rows_quarantined,
+    error,
+    warnings
+FROM pipeline_runs;
 
 
 -- One row per fund per NAV date: the change since the fund's previous NAV.
