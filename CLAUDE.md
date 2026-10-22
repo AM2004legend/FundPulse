@@ -83,6 +83,14 @@ read it before starting any task.
   drawdown restarts at the range start. Chart colours follow the fund picked first (blue),
   then second (orange) — validated palette slots 1–2. Disclaimer + "Data as of" are drawn by
   each page's header (AppTest's switch_page skips code after page.run() in app.py).
+- 2026-10-22 (Phase 9): `raw_nav` keeps the last 30 days only (`RAW_RETENTION_DAYS` in
+  config.py), pruned after each good load. Measured 3.0 MB per daily file, which is about
+  1.1 GB a year and would overflow Supabase's free 500 MB. Clean tables keep full history.
+- 2026-10-22 (Phase 9): daily cron `17 1 * * *` = 06:47 IST. AMFI's file keeps changing late
+  at night and during the day, so the run waits until early morning. Hosted DB is Supabase
+  free tier, reached through the **session pooler** URL because GitHub Actions is IPv4-only.
+  Schema/view changes reach production by running `pipeline.db --init` by hand; the daily
+  workflow only runs `pipeline.run`.
 
 ## Folder structure
 ```
@@ -146,3 +154,5 @@ docs/PRD.md
   emptied before each test; dev data is never touched)
 - `ruff check .` / `ruff format .`
 - `streamlit run dashboard/app.py`
+- `gh workflow run daily.yml` — trigger the daily load on GitHub now (or the "Run workflow"
+  button in the Actions tab); `gh run watch` follows it live

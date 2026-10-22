@@ -1,0 +1,58 @@
+# Lint + tests on every push and pull request, against a throwaway Postgres 16.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # A fresh Postgres container for this job only, reachable at localhost:5432.
+    # Same credentials as docker-compose.yml; tests create fundpulse_test themselves.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fundpulse
+          POSTGRES_PASSWORD: fundpulse
+          POSTGRES_DB: fundpulse
+        ports:
+          - 5432:5432
+        # The job's steps wait until this health check passes
+        options: >-
+          --health-cmd "pg_isready -U fundpulse -d fundpulse"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql://fundpulse:fundpulse@localhost:5432/fundpulse_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip  # reuse downloaded packages until a requirements file changes
+          cache-dependency-path: |
+            requirements*.txt
+            dashboard/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+      - name: Tests
+        run: pytest

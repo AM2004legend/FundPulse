@@ -75,3 +75,11 @@ def test_failed_load_keeps_raw_lines_but_no_clean_data(
     assert conn.execute("SELECT status FROM pipeline_runs").fetchone() == ("failed",)
     assert count(conn, "raw_nav") == 46  # saved in its own transaction, before the load
     assert count(conn, "nav_history") == 0
+
+
+def test_run_prunes_raw_lines_past_retention(conn, test_db_url, fixture_lines):
+    run_fixture(test_db_url, fixture_lines)
+    conn.execute("UPDATE raw_nav SET loaded_at = now() - interval '31 days'")  # an old run
+    new_run_id = run_fixture(test_db_url, fixture_lines)
+
+    assert conn.execute("SELECT DISTINCT run_id FROM raw_nav").fetchall() == [(new_run_id,)]

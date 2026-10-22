@@ -1,0 +1,42 @@
+# The daily load: download AMFI's file and load it into the hosted database.
+# A failed run (download error, bad load or failed quality check) exits 1, which turns the
+# workflow red and makes GitHub email the repo owner.
+name: Daily NAV load
+
+on:
+  schedule:
+    # Cron is always UTC. 01:17 UTC = 06:47 IST: AMFI keeps updating the file late into the
+    # night, so by early morning the previous day's NAVs are complete. An odd minute avoids
+    # the top of the hour, when GitHub's scheduled runs are most often delayed.
+    - cron: "17 1 * * *"
+  workflow_dispatch:  # "Run workflow" button in the Actions tab
+
+# Never two loads at once (e.g. a manual run while the scheduled one is going).
+concurrency:
+  group: daily-load
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the pipeline
+        run: python -m pipeline.run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

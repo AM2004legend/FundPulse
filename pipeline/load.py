@@ -70,6 +70,8 @@ ON CONFLICT (scheme_code, nav_date) DO NOTHING
 
 INSERT_QUARANTINE = "INSERT INTO quarantine (run_id, raw_line, reason) VALUES (%s, %s, %s)"
 
+PRUNE_RAW = "DELETE FROM raw_nav WHERE loaded_at < now() - make_interval(days => %s)"
+
 
 class InsertStats(NamedTuple):
     inserted: int  # new (scheme, date) rows
@@ -110,6 +112,12 @@ def save_raw_lines(conn: psycopg.Connection, run_id: int, lines: list[str]) -> N
         with cur.copy("COPY raw_nav (run_id, line_no, raw_line) FROM STDIN") as copy:
             for line_no, line in enumerate(lines, start=1):
                 copy.write_row((run_id, line_no, line))
+
+
+def prune_raw_lines(conn: psycopg.Connection, keep_days: int) -> int:
+    """Delete raw lines older than keep_days and return how many went. Clean data is untouched."""
+    with conn.transaction():
+        return conn.execute(PRUNE_RAW, (keep_days,)).rowcount
 
 
 def load_day(conn: psycopg.Connection, run_id: int, result: TransformResult) -> None:

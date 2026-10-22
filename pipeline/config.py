@@ -24,6 +24,11 @@ MFAPI_CACHE_DIR = PROJECT_ROOT / "data" / "cache" / "mfapi"
 
 WATCHLIST_CATEGORIES = ("large-cap", "flexi-cap", "mid-cap", "index", "debt")
 
+# raw_nav keeps each day's file for this many days. A full file is ~1.5 MB of text a day,
+# which would fill a 500 MB free hosted database within months; the clean tables keep the
+# history, and a month of raw lines is enough to investigate any recent bad load.
+RAW_RETENTION_DAYS = 30
+
 
 def read_watchlist(path=WATCHLIST_PATH) -> dict[int, str]:
     """Return {scheme_code: category}. Fails loudly on a typo rather than skipping a fund."""

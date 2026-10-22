@@ -113,3 +113,17 @@ def test_raw_lines_are_saved_exactly(conn, fixture_lines):
     ).fetchall()
     assert [r[1] for r in rows] == fixture_lines
     assert rows[1] == (2, " ")  # the single-space "blank" line survives
+
+
+def test_prune_deletes_only_raw_lines_older_than_the_limit(conn):
+    old, recent = load.start_run(conn), load.start_run(conn)
+    load.save_raw_lines(conn, old, ["a", "b"])
+    load.save_raw_lines(conn, recent, ["c"])
+    age = "UPDATE raw_nav SET loaded_at = now() - make_interval(days => %s) WHERE run_id = %s"
+    conn.execute(age, (31, old))
+    conn.execute(age, (29, recent))
+
+    assert load.prune_raw_lines(conn, keep_days=30) == 2
+    assert conn.execute("SELECT raw_line FROM raw_nav").fetchall() == [("c",)]
+    # pruning is about raw storage only: the run's log row stays
+    assert conn.execute("SELECT count(*) FROM pipeline_runs").fetchone()[0] == 2

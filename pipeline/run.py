@@ -8,10 +8,17 @@ import sys
 from datetime import date
 
 from pipeline.checks import run_checks, today_in_india
-from pipeline.config import read_watchlist
+from pipeline.config import RAW_RETENTION_DAYS, read_watchlist
 from pipeline.db import get_connection
 from pipeline.extract import download_nav_file
-from pipeline.load import finish_run, load_day, save_raw_lines, start_run, sync_watchlist
+from pipeline.load import (
+    finish_run,
+    load_day,
+    prune_raw_lines,
+    save_raw_lines,
+    start_run,
+    sync_watchlist,
+)
 from pipeline.transform import parse_nav_lines
 
 logger = logging.getLogger("pipeline.run")
@@ -43,6 +50,9 @@ def run(
             result = parse_nav_lines(lines)
             load_day(conn, run_id, result)  # one transaction: all or nothing
             sync_watchlist(conn, watchlist)
+            # Only after a good load, so a broken source never eats the last raw files we have.
+            pruned = prune_raw_lines(conn, RAW_RETENTION_DAYS)
+            logger.info("Pruned %d raw lines older than %d days", pruned, RAW_RETENTION_DAYS)
             results = run_checks(conn, run_id, result, watchlist, today or today_in_india())
         except Exception as exc:
             finish_run(conn, run_id, "failed", error=f"{type(exc).__name__}: {exc}")

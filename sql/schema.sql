@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
     warnings         TEXT   -- quality warnings that did not fail the run
 );
 
--- Raw layer: every line of the downloaded file, exactly as received.
+-- Raw layer: every line of the downloaded file, exactly as received. Kept for the last
+-- RAW_RETENTION_DAYS (pipeline/config.py) only; the clean tables keep the full history.
 CREATE TABLE IF NOT EXISTS raw_nav (
     run_id    BIGINT NOT NULL REFERENCES pipeline_runs (run_id),
     line_no   INTEGER NOT NULL,
